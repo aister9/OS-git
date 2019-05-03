@@ -246,7 +246,7 @@ public class Simulator {
 					int  temp = cur.getBustTime()% timeQ;
 					totalTime += temp;
 					elements.setworkTime(temp);
-					progressQueue.add(elements);
+					if(elements.getworkTime() != 0)					progressQueue.add(elements);
 					if(mainApp != null ) {
 						cur.setTaTime(totalTime-cur.getArrTime());
 						cur.setWork(cur.getBustTime());
