@@ -106,7 +106,16 @@ public class Simulator {
 					cur.setWork(cur.getWork()-timeQ);
 					elements.setworkTime(timeQ);
 					progressQueue.add(elements);
-					squeue.add(cur);
+					if(cur.getWork() != 0) squeue.add(cur);
+					else {
+						if(mainApp != null ) {
+							cur.setTaTime(totalTime-cur.getArrTime());
+							cur.setWork(cur.getBustTime());
+							cur.setWaitTime(cur.getTaTime()-cur.getBustTime());
+							cur.setNormalizeTT((double)cur.getTaTime() / (double)cur.getBustTime());
+							mainApp.processDataChange(cur);
+						}
+					}
 				}
 				else 
 				{
@@ -239,14 +248,23 @@ public class Simulator {
 					cur.setWork(cur.getWork()-timeQ);
 					elements.setworkTime(timeQ);
 					progressQueue.add(elements);
-					priQueue.add(cur);
+					if(cur.getWork() != 0)priQueue.add(cur);
+					else {
+						if(mainApp != null ) {
+							cur.setTaTime(totalTime-cur.getArrTime());
+							cur.setWork(cur.getBustTime());
+							cur.setWaitTime(cur.getTaTime()-cur.getBustTime());
+							cur.setNormalizeTT((double)cur.getTaTime() / (double)cur.getBustTime());
+							mainApp.processDataChange(cur);
+						}
+					}
 				}
 				else 
 				{
 					int  temp = cur.getBustTime()% timeQ;
 					totalTime += temp;
 					elements.setworkTime(temp);
-					if(elements.getworkTime() != 0)					progressQueue.add(elements);
+					if(elements.getworkTime() != 0) progressQueue.add(elements);
 					if(mainApp != null ) {
 						cur.setTaTime(totalTime-cur.getArrTime());
 						cur.setWork(cur.getBustTime());

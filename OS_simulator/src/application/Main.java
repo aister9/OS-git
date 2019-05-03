@@ -118,6 +118,7 @@ public class Main extends Application {
 			
 			ProcessCharController controller = loader.getController();
 			System.out.println(pq);
+			controller.setProcessData(processData);
 			controller.setProgressData(pq, mode, cmap);
 			
 			dialogStage.show();

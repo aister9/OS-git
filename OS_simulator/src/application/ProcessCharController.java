@@ -5,6 +5,7 @@ import java.util.Queue;
 import java.util.Random;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Group;
@@ -15,6 +16,7 @@ import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -31,6 +33,11 @@ public class ProcessCharController {
 	@FXML
 	private HBox hbox;
 	
+	private ObservableList<process> processData;
+	
+	public void setProcessData(ObservableList<process> _processData) {
+		this.processData = _processData;
+	}
 	
 	@FXML
 	private void initialize() {
@@ -49,10 +56,15 @@ public class ProcessCharController {
 			series[offset] = new XYChart.Series<>();
 			series[offset].getData().add(new XYChart.Data<>(pq.peek().getworkTime(),"process" ) );
 			series[offset].setName("P " + Integer.toString(pq.peek().getId()));
-
-
+			
 			sbc.getData().add(series[offset]);
-			for(Node n : sbc.lookupAll(".default-color"+offset+".chart-bar")) {
+			
+			for(Node n : sbc.lookupAll(".series"+offset)) {
+				Tooltip.install(n,
+						new Tooltip("P" + Integer.toString(pq.peek().getId()) + "\n"
+								+"ArrivalTime : " + Integer.toString(processData.get(pq.peek().getId()-1).getArrTime())+ "\n"
+								+"BurstTime : " + Integer.toString(processData.get(pq.peek().getId()-1).getBustTime())+ "\n"
+								+"EndTime : " + Integer.toString(processData.get(pq.peek().getId()-1).getArrTime()+processData.get(pq.peek().getId()-1).getTaTime())+ "\n"));
 				n.setStyle("-fx-bar-fill: "+colormap.getColorOfI(pq.peek().getId()-1)+";");
 				if(pq.peek().getId() > processNum) processNum = pq.peek().getId();
 			}
@@ -60,10 +72,7 @@ public class ProcessCharController {
 			pq.remove();
 			offset++;
 		}
-		System.out.println(processNum);
-		for(int i = 1 ; i<= processNum ; i++) createRectangle(hbox, i, colormap);
-		sbc.setLegendSide(Side.BOTTOM);
-		sbc.setLegendVisible(true);
+		for(int i = 1 ; i<= cMap.getSize() ; i++) createRectangle(hbox, i, colormap);
 		sbc.setTitle("Process Simulator : " + mode);
 		xAxis.setUpperBound(totalTime);
 		

@@ -207,17 +207,17 @@ public class mainViewController {
 				break;
 			case 1:
 				s.setTimeQ(tq);
-				mainApp.showProcessProgressChart(s.runRR(), "RR", cMap);
+				Animation(s.runRR(), "RR");
 				break;
 			case 2:
-				mainApp.showProcessProgressChart(s.runSPN(), "SPN", cMap);
+				Animation(s.runSPN(), "SPN");
 				break;
 			case 3:
-				mainApp.showProcessProgressChart(s.runHRN(), "HRN", cMap);
+				Animation(s.runHRN(), "HRN");
 				break;
 			case 4:
 				s.setTimeQ(tq);
-				mainApp.showProcessProgressChart(s.runTHRN(), "THRN", cMap);
+				Animation(s.runTHRN(), "THRN");
 				break;
 
 			default:
@@ -239,9 +239,13 @@ public class mainViewController {
 			if((tqTF.getText() == null || tqTF.getText().length() == 0)) {
 				errmsg += "No valid timeQuantum!\n";
 				System.out.println(errmsg);
-			}else{
+			}
+			else{
 				try {
-					Integer.parseInt(tqTF.getText());
+					int testInt = Integer.parseInt(tqTF.getText());
+					if(testInt <= 0) {
+						errmsg += "No vaild tqTF (must be unsigned Integer)\n";
+					}
 				}catch(NumberFormatException e) {
 					errmsg += "No valid tqTF (must be an integer)!\n";
 				}
@@ -256,6 +260,8 @@ public class mainViewController {
 			alert.setTitle("Invalid Fields");
 			alert.setHeaderText("Please correct invalid fields");
 			alert.setContentText(errmsg);
+			
+			alert.showAndWait();
 			return false;
 		}
 	}
@@ -264,6 +270,7 @@ public class mainViewController {
 		Queue<ProcessProgress> animationQ = new LinkedList<>();
 		animationQ.addAll(pq);
 		
+		//StartLine and EndLine Setting
 		Line startLine = new Line(animatePane.getLayoutX()+10, animatePane.getLayoutY()+50, animatePane.getLayoutX()+10, animatePane.getLayoutY()+60);
 		Label startTime = new Label("0");
 		startTime.setTranslateX(startLine.getStartX()-startTime.getWidth()/2);
@@ -276,8 +283,9 @@ public class mainViewController {
 		endTime.setTranslateY(endLine.getEndY()+10);
 		Group endPoint = new Group(endLine, endTime);
 
+		//Animation Setting
 		Label l = new Label("P"+animationQ.peek().getId());
-		Rectangle r = new Rectangle(10, 50, 10, 10);
+		Rectangle r = new Rectangle(10, 50, 20, 20);
 		r.setFill(Color.web(cMap.getColorOfI(0)));
 		l.setTranslateX(10);
 		l.setTranslateY(50);
@@ -289,6 +297,7 @@ public class mainViewController {
 		KeyFrame keyFrame = new KeyFrame(Duration.millis(1000), new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
+				//End of Animation
 				mainApp.showProcessProgressChart(pq, mode, cMap);
 			}
 		},keyValue);
