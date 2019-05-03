@@ -22,6 +22,7 @@ public class Main extends Application {
 	private ObservableList<process> processData = FXCollections.observableArrayList();
 	
 	public Main() {
+		//test case
 		processData.add(new process(1, 0, 3));
 		processData.add(new process(2, 1, 7));
 		processData.add(new process(3, 3, 2));
@@ -102,7 +103,7 @@ public class Main extends Application {
 		}
 	}
 	
-	public void showProcessProgressChart(Queue<ProcessProgress> pq, String mode) {
+	public void showProcessProgressChart(Queue<ProcessProgress> pq, String mode, colorMap cmap) {
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setLocation(Main.class.getResource("ProcessProgressChartForm.fxml"));
@@ -117,7 +118,7 @@ public class Main extends Application {
 			
 			ProcessCharController controller = loader.getController();
 			System.out.println(pq);
-			controller.setProgressData(pq, mode);
+			controller.setProgressData(pq, mode, cmap);
 			
 			dialogStage.show();
 		}catch(IOException e) {
