@@ -10,12 +10,19 @@ public class process implements Comparable<process> {
 	private IntegerProperty arrTime;
 	private IntegerProperty bustTime;
 	private IntegerProperty waitTime;
+	private IntegerProperty RestBustTime;
 	private IntegerProperty taTime;
 	private IntegerProperty work;
 	private DoubleProperty NormalizeTT;
 	private DoubleProperty Aging;
 	
-	
+
+	public int getRestBustTime() {
+		return RestBustTime.get();
+	}
+	public void setRestBustTime(int resetBustTime) {
+		RestBustTime.set(resetBustTime);
+	}
 	public double getAging() {
 		return Aging.get();
 	}
@@ -33,6 +40,7 @@ public class process implements Comparable<process> {
 		taTime= new SimpleIntegerProperty(0);
 		NormalizeTT = new SimpleDoubleProperty(0.0);
 		Aging = new SimpleDoubleProperty(0.0);
+		RestBustTime = new SimpleIntegerProperty(0);
 	}	
 	
 	public void progress() {
@@ -117,7 +125,7 @@ public class process implements Comparable<process> {
 	@Override
 	public int compareTo(process target) {
 		// TODO Auto-generated method stub.
-		return this.getBustTime() >= target.getBustTime() ? 1 : -1;
+		return this.getRestBustTime() > target.getRestBustTime() ? 1 : -1;
 	}
 	
 }

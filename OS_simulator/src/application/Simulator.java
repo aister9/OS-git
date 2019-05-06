@@ -171,6 +171,67 @@ public class Simulator {
 		}
 		return progressQueue;
 	}
+	/*SRTN*/
+	public Queue<ProcessProgress> runSRTN() {
+		Queue<ProcessProgress> progressQueue = new LinkedList<ProcessProgress>();
+		int totalTime = 0;
+		int temTime = 0;
+		process cur = null;
+		while((!isEnd())||(cur != null)) {
+			if(!pwQueue.isEmpty()) {
+				while(totalTime+temTime >= pwQueue.peek().getArrTime()) {
+					process addP = pwQueue.remove();
+					if(cur == null)
+						cur = addP;
+					else {
+						if(cur.getWork()>addP.getBustTime()) {
+							cur.setRestBustTime(cur.getWork());
+							priQueue.add(cur);
+							ProcessProgress elements = new ProcessProgress(cur.getId(),totalTime);
+							totalTime += temTime;
+							elements.setworkTime(temTime);
+							progressQueue.add(elements);
+							cur = addP;
+							temTime = 0;
+						}
+						else {
+							addP.setRestBustTime(addP.getBustTime());
+							priQueue.add(addP);
+						}
+					}
+					if(pwQueue.isEmpty())
+						break;
+				}
+			}
+			if(cur == null)
+				totalTime++;
+			else {
+				if(cur.getWork()!= 0) {
+					cur.setWork(cur.getWork()-1);
+					temTime++;
+				}
+				if(cur.getWork()==0){
+					ProcessProgress elements = new  ProcessProgress(cur.getId(),totalTime);
+					elements.setworkTime(temTime);
+					progressQueue.add(elements);
+					totalTime += temTime;
+					temTime =0;
+					if(mainApp != null ) {
+						cur.setTaTime(totalTime-cur.getArrTime());
+						cur.setWork(cur.getBustTime());
+						cur.setWaitTime(cur.getTaTime()-cur.getBustTime());
+						cur.setNormalizeTT((double)cur.getTaTime() / (double)cur.getBustTime());
+						mainApp.processDataChange(cur);
+					}
+					if(!priQueue.isEmpty())
+						cur = priQueue.remove();
+					else
+						cur = null;
+				}
+			}
+		}
+		return progressQueue;
+	}
 	/*HRN*/
 	public Queue<ProcessProgress> runHRN() {
 		Queue<ProcessProgress> progressQueue = new LinkedList<ProcessProgress>();

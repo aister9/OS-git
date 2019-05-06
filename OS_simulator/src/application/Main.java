@@ -92,7 +92,7 @@ public class Main extends Application {
 			
 			ProcessDataEditerController controller = loader.getController();
 			controller.setDialogStage(dialogStage);
-			controller.setProcess(p);
+			controller.setProcess(p, processData.get((p.getId()-2)%p.getId()), (p.getId() != processData.size())?processData.get(p.getId()):p);
 			
 			dialogStage.showAndWait();
 			

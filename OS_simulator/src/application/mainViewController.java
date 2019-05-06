@@ -19,6 +19,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -75,7 +76,7 @@ public class mainViewController {
 		wtColumn.setCellValueFactory(cellData -> cellData.getValue().waitProperty().asObject());
 		ttColumn.setCellValueFactory(cellData -> cellData.getValue().ttProperty().asObject());
 		nttColumn.setCellValueFactory(cellData -> cellData.getValue().nttProperty().asObject());
-		modes.setItems(FXCollections.observableArrayList("FCFS", "RR", "SPN", "HRN", "THRN"));
+		modes.setItems(FXCollections.observableArrayList("FCFS", "RR", "SPN", "SRTN", "HRN", "THRN"));
 		modes.getSelectionModel().selectFirst();
 		modes.setTooltip(new Tooltip("set simulation mode"));
 		
@@ -213,9 +214,12 @@ public class mainViewController {
 				Animation(s.runSPN(), "SPN");
 				break;
 			case 3:
-				Animation(s.runHRN(), "HRN");
+				Animation(s.runSRTN(), "SRTN");
 				break;
 			case 4:
+				Animation(s.runHRN(), "HRN");
+				break;
+			case 5:
 				s.setTimeQ(tq);
 				Animation(s.runTHRN(), "THRN");
 				break;
@@ -235,7 +239,7 @@ public class mainViewController {
 	}
 	private boolean isValidData() {
 		String errmsg = "";
-		if((mode == 1 || mode == 4)) {
+		if((mode == 1 || mode == 5)) {
 			if((tqTF.getText() == null || tqTF.getText().length() == 0)) {
 				errmsg += "No valid timeQuantum!\n";
 				System.out.println(errmsg);
@@ -283,29 +287,89 @@ public class mainViewController {
 		endTime.setTranslateY(endLine.getEndY()+10);
 		Group endPoint = new Group(endLine, endTime);
 
+		double lineLength = endLine.getStartX()-startLine.getStartX();
+		double xposs[] = new double[animationQ.size()+1];
+		int totalTime = 0;
+		for(int i = 0; i<animationQ.size(); i++) {
+			ProcessProgress tmp =animationQ.remove();
+			totalTime+=tmp.getworkTime();
+			animationQ.add(tmp);
+		}
+		endTime.setText(Integer.toString(totalTime));
+		for(int i = 0; i<animationQ.size(); i++) {
+			ProcessProgress tmp =animationQ.remove();
+			if( i == 0) xposs[i]=(double)tmp.getworkTime()/(double)totalTime * lineLength;
+			else xposs[i]=xposs[i-1]+(double)tmp.getworkTime()/(double)totalTime * lineLength;
+			animationQ.add(tmp);
+			System.out.println(xposs[i]);
+		}
+		
+		
+		animatePane.getChildren().add(startPoint);
+		animatePane.getChildren().add(endPoint);
+		
+		double nextStartPos = 0;
+		
 		//Animation Setting
+		int index = -1;
+		ProgressAnimation pa = new ProgressAnimation(animationQ.remove(), cMap, 10, 50, totalTime, lineLength,index);
+		pa.setTimeLine();
+		animatePane.getChildren().add(pa.getProcessGroup());
+		animatePane.getChildren().add(pa.getEndGroup());
+		pa.setFinish(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				//End of Animation
+				ProgressAnimation pb = new ProgressAnimation(animationQ.remove(), cMap, xposs[pa.getNextIndex()], 50, pa.getTotalTime(), lineLength, pa.getIndex());
+				pb.setTimeLine();
+				animatePane.getChildren().add(pb.getProcessGroup());
+				if(animationQ.isEmpty()) {
+					pb.getTimeline().play();
+					pb.setFinish(new EventHandler<ActionEvent>() {
+						@Override
+						public void handle(ActionEvent e) {
+							mainApp.showProcessProgressChart(pq, mode, cMap);
+						}});
+				}
+				else{
+					animatePane.getChildren().add(pb.getEndGroup());
+					pb.setFinish(this);
+					pb.getTimeline().play();
+				}
+			}
+		});
+		pa.getTimeline().play();
+		/*
 		Label l = new Label("P"+animationQ.peek().getId());
-		Rectangle r = new Rectangle(10, 50, 20, 20);
+		Rectangle r = new Rectangle(10+nextStartPos, 50, 20, 20);
 		r.setFill(Color.web(cMap.getColorOfI(0)));
-		l.setTranslateX(10);
+		l.setTranslateX(10+nextStartPos);
 		l.setTranslateY(50);
 		l.setTextFill(Color.WHITE);
 		Group p1 = new Group(r, l);
 		
+		
+		
 		Timeline timeline = new Timeline();
-		KeyValue keyValue = new KeyValue(p1.translateXProperty(), endLine.getStartX()-startLine.getStartX()-r.getWidth());
+		KeyValue keyValue = new KeyValue(p1.translateXProperty(), nextPos-r.getWidth());
 		KeyFrame keyFrame = new KeyFrame(Duration.millis(1000), new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 				//End of Animation
+				Line curLine = new Line(p1.getTranslateX()+r.getWidth()+10, animatePane.getLayoutY()+50, p1.getTranslateX()+r.getWidth()+10, animatePane.getLayoutY()+60);
+				Label currentTime = new Label(Integer.toString(animationQ.peek().getworkTime()));
+				currentTime.setTranslateX(curLine.getStartX());
+				currentTime.setTranslateY(curLine.getEndY()+10);
+				Group currentGroup = new Group(curLine, currentTime);
+				animatePane.getChildren().add(currentGroup);
 				mainApp.showProcessProgressChart(pq, mode, cMap);
 			}
 		},keyValue);
+		
 		timeline.getKeyFrames().add(keyFrame);
-		animatePane.getChildren().add(startPoint);
-		animatePane.getChildren().add(endPoint);
 		animatePane.getChildren().add(p1);
 		timeline.play();
+		*/
 		
 	}
 }

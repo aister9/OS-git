@@ -18,6 +18,8 @@ public class ProcessDataEditerController {
 	
 	private Stage dialogStage;
 	private process prc;
+	private process preProcess;
+	private process nxtProcess;
 	private boolean okClicked = false;
 	
 	@FXML
@@ -29,8 +31,10 @@ public class ProcessDataEditerController {
 		this.dialogStage = dialogStage;
 	}
 	
-	public void setProcess(process p) {
+	public void setProcess(process p, process pre, process nxt) {
 		this.prc = p;
+		this.preProcess = pre;
+		this.nxtProcess = nxt;
 		
 		pidLabel.setText(Integer.toString(prc.getId()));
 		arrTimeTextField.setText(Integer.toString(prc.getArrTime()));
@@ -62,6 +66,11 @@ public class ProcessDataEditerController {
 		}else{
 			try {
 				Integer.parseInt(arrTimeTextField.getText());
+				if(Integer.parseInt(arrTimeTextField.getText()) < 0) errmsg+="arr Time must be >= 0";
+				if(prc.getId()!= preProcess.getId() && (Integer.parseInt(arrTimeTextField.getText()) <= preProcess.getArrTime())) errmsg+="arr Time must be > previous process`s arrival time";
+				//도착시간은 무조건 이전값보다 커야함
+				if(prc.getId()!= nxtProcess.getId() && (Integer.parseInt(arrTimeTextField.getText()) >= nxtProcess.getArrTime())) errmsg+="arr Time must be < next process`s arrival time";
+				//도착시간은 무조건 다음값보다 작아야함
 			}catch(NumberFormatException e) {
 				errmsg += "No valid arrTime (must be an integer)!\n";
 			}
@@ -71,6 +80,7 @@ public class ProcessDataEditerController {
 		}else{
 			try {
 				Integer.parseInt(brTimeTextField.getText());
+				if(Integer.parseInt(brTimeTextField.getText()) <= 0) errmsg+="br Time must be > 0";
 			}catch(NumberFormatException e) {
 				errmsg += "No valid brTime (must be an integer)!\n";
 			}
@@ -84,6 +94,8 @@ public class ProcessDataEditerController {
 			alert.setTitle("Invalid Fields");
 			alert.setHeaderText("Please correct invalid fields");
 			alert.setContentText(errmsg);
+			
+			alert.showAndWait();
 			return false;
 		}
 	}
